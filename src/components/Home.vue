@@ -2,12 +2,14 @@
   <v-container fluid>
     <div>
       <v-row>
-          <v-file-input
-            small-chips
-            multiple
-            label="Selecione legendas"
-            prepend-icon="mdi-message-text"
-          ></v-file-input>
+        <v-file-input
+          small-chips
+          multiple
+          label="Selecione as legendas"
+          prepend-icon="mdi-message-text"
+          v-model="files"
+          @change="processSubtiles()"
+        ></v-file-input>
       </v-row>
       <v-row>
         <v-col cols="2" v-for="word in groupedWords" :key="word.name">
@@ -19,6 +21,7 @@
 </template>
 
 <script>
+import { ipcRenderer } from "electron";
 import Pill from "./Pill";
 
 export default {
@@ -27,27 +30,18 @@ export default {
   },
   data: function () {
     return {
-      groupedWords: [
-        { name: "I", amount: 1234 },
-        { name: "You", amount: 900 },
-        { name: "He", amount: 853 },
-        { name: "I", amount: 1234 },
-        { name: "You", amount: 900 },
-        { name: "He", amount: 853 },
-        { name: "I", amount: 1234 },
-        { name: "You", amount: 900 },
-        { name: "He", amount: 853 },
-        { name: "I", amount: 1234 },
-        { name: "You", amount: 900 },
-        { name: "He", amount: 853 },
-        { name: "I", amount: 1234 },
-        { name: "You", amount: 900 },
-        { name: "He", amount: 853 },
-        { name: "I", amount: 1234 },
-        { name: "You", amount: 900 },
-        { name: "He", amount: 853 },
-      ],
+      files: [],
+      groupedWords: [],
     };
+  },
+  methods: {
+    processSubtiles() {
+      const paths = this.files.map((f) => f.path);
+      ipcRenderer.send("asynchronous-message", paths);
+      ipcRenderer.on("asynchronous-reply", (event, resp) => {
+        this.groupedWords = resp;
+      });
+    },
   },
 };
 </script>
